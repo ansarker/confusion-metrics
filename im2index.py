@@ -1,5 +1,8 @@
 import numpy as np
+from numba import jit
 
+
+@jit(nopython=True)
 def im2index(im):
     assert len(im.shape) == 3
     r = im[:, :, 0].ravel()

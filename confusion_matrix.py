@@ -1,4 +1,5 @@
 import numpy as np 
+from numba import jit
 
 
 def confusion_metrics(target, predict, num_of_classes):
@@ -34,31 +35,41 @@ def get_confusion_metrics_score(class_index, conf_metric):
 
 def precision(tp, fp):
     if tp == 0:
-        return 1
+        return 0
     elif tp + fp == 0:
-        return 1
+        return 0
     else:
         return tp / (tp + fp)
 
-    
+
 def recall(tp, fn):
     if tp == 0:
-        return 1
+        return 0
     elif tp + fn == 0:
-        return 1
+        return 0
     else:
         return tp / (tp + fn)
 
-    
+
 def accuracy(tp, tn, fp, fn):
     if tp + tn + fp + fn == 0:
-        return 1
+        return 0
     else:
         return (tp + tn) / (tp + tn + fp + fn)
 
 
 def iou_conf(tp, fn, fp):
     if tp + fn + fp == 0:
-        return 1
+        return 0
     else:
         return tp / (tp + fn + fp)
+
+
+def percentage(num_of_classes, target):
+    total = target.shape[0] * target.shape[1]
+    percentage = np.arange(0, num_of_classes, dtype=np.int)
+    
+    for i in target.ravel():
+        percentage[i] += 1
+
+    return (percentage/total) * 100
