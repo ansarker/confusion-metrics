@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 
-def conf_mat_csv(dataframe, percent, img_title, pos):
+def conf_mat_csv(opt, dataframe, percent, img_title, pos):
     add_to_first_col = []
     csv_header = []
     csv_rows = []
@@ -35,7 +35,6 @@ def conf_mat_csv(dataframe, percent, img_title, pos):
             else:
                 str_class = data_frame_np_[i, 0] + '-' + data_frame_np_[j, 0]
                 csv_header.append(str_class)
-    
 
     """
         Title rows, percent and confusion matrix rows
@@ -46,9 +45,8 @@ def conf_mat_csv(dataframe, percent, img_title, pos):
         for j in range(1, data_frame_np_.shape[1]):
             csv_rows.append(data_frame_np_[i, j])
     
-
     data_frame_csv = pd.DataFrame(columns=csv_header)
-    with open('result/csvs/confusion_matrix.csv', 'a') as f:
+    with open(f'{opt.results}/confusion_matrix.csv', 'a') as f:
         data_frame_csv.loc[pos] = np.array(csv_rows).reshape(-1, len(csv_rows))[0]
         data_frame_csv.to_csv(f, header=True)
     data_frame_csv

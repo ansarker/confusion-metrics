@@ -18,7 +18,7 @@ import resource
 import gc
 
 
-def heatmap(conf_mat, labels, fmt, output_dir, output_name):
+def heatmap(opt, conf_mat, labels, fmt, output_name):
     data_frame = pd.DataFrame(conf_mat, index = [i for i in labels], columns = [i for i in labels])
     plt.figure(num=None, figsize=(12,6), dpi=300)
     ax = sb.heatmap(data_frame, annot=True, linewidths=.2, cmap='Blues', fmt=fmt)
@@ -28,36 +28,31 @@ def heatmap(conf_mat, labels, fmt, output_dir, output_name):
     plt.ylabel('Actual', size=12, color='g')
     ax.xaxis.tick_top()
     ax.xaxis.set_label_position('top')
-    plt.savefig(os.path.join(output_dir, output_name + '.png'))
+    plt.savefig(os.path.join(opt.results, output_name))
 
-
-def plot_images(fname, original, target, predict, pos):
-
-    labels = ["Unrecognized", "Forest", "Builtup", "Water", "Farmland", "Meadow"]
-    figure_dir = 'result/figure'
-    conf_mat_dir = 'result/confusion-matrix'
-    norm_conf_mat_dir = 'result/normalize-confusion-matrix'
-    num_of_classes = 6
-    
+def plot_images(opt, fname, original, target, predict, pos):
+    labels = ["Unrecognized", "Forest", "Builtup", "Water", "Farmland", "Meadow"]    
     # Convert the target and predict image into index image
     tar_ind = im2index(target)
     pre_ind = im2index(predict)
 
     # Confusion matrix table
-    # Return a 6x6 Confusion Matrix
-    conf_matrix = confusion_metrics(target=tar_ind, predict=pre_ind, num_of_classes=num_of_classes)
+    # Return a num_classes x num_classes Confusion Matrix
+    conf_matrix = confusion_metrics(target=tar_ind, predict=pre_ind, num_of_classes=opt.num_classes)
     normalize_conf_matrix = norm_confusion_metrics(conf_matrix=conf_matrix)
     dff_cm = pd.DataFrame(conf_matrix, index = [i for i in labels], columns = [i for i in labels])
 
     # Save the confusion matrix heatmap for conf_matrix
-    heatmap(conf_mat=conf_matrix, labels=labels, fmt='d', output_dir=conf_mat_dir, output_name=fname)
-    heatmap(conf_mat=normalize_conf_matrix, labels=labels, fmt='.4f', output_dir=norm_conf_mat_dir, output_name=fname)
+    heatmap(opt=opt, conf_mat=conf_matrix, labels=labels, fmt='d', output_name=f'cm_{fname}')
+    if opt.norm_conf:
+        heatmap(opt=opt, conf_mat=normalize_conf_matrix, labels=labels, fmt='.4f', output_name=f'norm_cm_{fname}')
 
     # Percentage of each classes
-    percent = percentage(num_of_classes=num_of_classes, target=tar_ind)
+    percent = percentage(num_of_classes=opt.num_classes, target=tar_ind)
     
     # Here to write the csv file
-    conf_mat_csv(dataframe=dff_cm, percent=percent, img_title=fname.rstrip('.png'), pos=pos)
+    if opt.write_csv:
+        conf_mat_csv(opt, dataframe=dff_cm, percent=percent, img_title=fname.rstrip('.png'), pos=pos)
     
     # Calculate the accuracies for each index
     ac = []
@@ -121,7 +116,8 @@ def plot_images(fname, original, target, predict, pos):
     axarr[0].plot([], [], color='#FFFF00', label="Meadow\n"+str(pe[5])+"%\n"+str(ac[5])+"\n"+str(io[5])+"\n"+str(pr[5])+"\n"+str(rc[5]))
 
     f.legend(loc='lower center', bbox_to_anchor=(0.485, 0.00), shadow=False, ncol=10, fontsize='12')
-    plt.savefig(os.path.join(figure_dir, fname), dpi=300)
+    if opt.figure:
+        plt.savefig(os.path.join(opt.results, f'fig_{fname}'), dpi=300)
 
     # Free current memory
     cuda.current_context().deallocations.clear()

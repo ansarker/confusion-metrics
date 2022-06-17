@@ -3,9 +3,8 @@ from numba import jit
 
 
 def confusion_metrics(target, predict, num_of_classes):
-
     '''
-    Return a confusion metric for size of num_of_classes
+        Return a confusion metric for size of num_of_classes
     '''
     
     conf_metrics = np.zeros((num_of_classes, num_of_classes), dtype=np.int)
@@ -16,10 +15,9 @@ def confusion_metrics(target, predict, num_of_classes):
 
 
 def norm_confusion_metrics(conf_matrix):
-
     '''
-    Return a normalize confusion metric.
-    Divide each cell of a row by the sum of each row
+        Return a normalize confusion metric.
+        Divide each cell of a row by the sum of each row
     '''
 
     new_cf = np.zeros(conf_matrix.shape, dtype=np.float)
